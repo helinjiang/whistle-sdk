@@ -1,4 +1,5 @@
 import { processHandler, util as cmdHubUtil } from "cmd-hub";
+import { checkIfWhistleStarted } from './utils';
 
 interface IWhistleSDKOpts {
   seqId?: string;
@@ -51,9 +52,28 @@ export default class WhistleSDK {
     );
 
     // 自检一下 whistle 是否真正启动了
-    await this.checkIfStarted();
+    await checkIfWhistleStarted(this.port);
 
     logger.info('Start whistle success!');
+  }
+
+  /**
+   * 设置 whistle rules
+   */
+  public async setRules(): Promise<void> {
+    logger.info('Ready to set whistle rules ...');
+
+    // // 获取 rules
+    // // const whistleRules = opts.getWhistleRules();
+    // const whistleRules = '';
+    //
+    // // 校验合法性
+    // if (!whistleRules || !whistleRules.name || !whistleRules.rules) {
+    //   logger.error('无法自动生成 whistle 代理规则！', JSON.stringify(opts));
+    //   return Promise.reject('无法自动生成 whistle 代理规则！');
+    // }
+
+    logger.info('Set whistle rules success!');
   }
 
   /**
@@ -82,22 +102,6 @@ export default class WhistleSDK {
     await processHandler.kill(PROCESS_KEY);
 
     logger.info('Stop all whistle success!');
-  }
-
-  /**
-   * 检查 whistle 是否已经启动
-   * @param port
-   */
-  public async checkIfStarted(port?: number): Promise<boolean> {
-    // 自检一下 whistle 是否真正启动了
-    const checkURL = `http://127.0.0.1:${port || this.port}/cgi-bin/server-info`;
-
-    return await cmdHubUtil.base.checkAndWaitURLAvailable(checkURL, { debug: process.env.DEBUG === '1' })
-      .catch((err) => {
-        const errMsg = err?.message || err;
-
-        return Promise.reject(`检测 whistle 未成功启动, checkURL=${checkURL}, err=${errMsg}`);
-      });
   }
 
   private async findAndSetPort() {
