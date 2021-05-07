@@ -1,1 +1,3 @@
-export default 'whistle-sdk';
+import WhistleSDK from "./WhistleSDK";
+
+export default WhistleSDK;
