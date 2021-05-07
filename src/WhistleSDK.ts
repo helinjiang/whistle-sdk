@@ -59,7 +59,7 @@ export default class WhistleSDK {
     // 自检一下 whistle 是否真正启动了
     const checkURL = `http://127.0.0.1:${port || this.port}/cgi-bin/server-info`;
 
-    return await cmdHubUtil.base.checkAndWaitURLAvailable(checkURL, { debug: true })
+    return await cmdHubUtil.base.checkAndWaitURLAvailable(checkURL, { debug: process.env.DEBUG === '1' })
       .catch((err) => {
         const errMsg = err?.message || err;
 
