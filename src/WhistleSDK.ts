@@ -25,6 +25,9 @@ export default class WhistleSDK {
     this.seqId = this.getSeqId(opts?.seqId);
   }
 
+  /**
+   * 启动 whistle
+   */
   public async start(): Promise<void> {
     logger.info('Ready to start whistle ...');
 
@@ -53,6 +56,9 @@ export default class WhistleSDK {
     logger.info('Start whistle success!');
   }
 
+  /**
+   * 停止单个 whistle 进程
+   */
   public async stop(port?: number): Promise<void> {
     logger.info('Ready to stop whistle ...');
 
@@ -67,6 +73,9 @@ export default class WhistleSDK {
     logger.info(`Stop whistle(http://127.0.0.1:${targetPort}) success!`);
   }
 
+  /**
+   * 停止所有的 whistle 进程
+   */
   public async stopAll(): Promise<void> {
     logger.info('Ready to stop all whistle ...');
 
@@ -75,6 +84,10 @@ export default class WhistleSDK {
     logger.info('Stop all whistle success!');
   }
 
+  /**
+   * 检查 whistle 是否已经启动
+   * @param port
+   */
   public async checkIfStarted(port?: number): Promise<boolean> {
     // 自检一下 whistle 是否真正启动了
     const checkURL = `http://127.0.0.1:${port || this.port}/cgi-bin/server-info`;
