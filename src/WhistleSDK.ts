@@ -51,8 +51,18 @@ export default class WhistleSDK {
     logger.info('Start whistle success!');
   }
 
-  public async stop(): Promise<void> {
-    console.log('whistle stop');
+  public async stop(port?: number): Promise<void> {
+    logger.info('Ready to stop whistle ...');
+
+    const targetPort = port || this.port;
+    if (!targetPort) {
+      logger.info('Skip to stop because whistle port in unknown!');
+      return;
+    }
+
+    await cmdHubUtil.port.killPort(targetPort);
+
+    logger.info(`Stop whistle(http://127.0.0.1:${targetPort}) success!`);
   }
 
   public async checkIfStarted(port?: number): Promise<boolean> {
