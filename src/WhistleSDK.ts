@@ -1,4 +1,4 @@
-import { util as cmdHubUtil } from "cmd-hub";
+import { processHandler, util as cmdHubUtil } from "cmd-hub";
 
 interface IWhistleSDKOpts {
   seqId?: string;
@@ -8,6 +8,8 @@ interface IWhistleSDKOpts {
 }
 
 const logger = cmdHubUtil.log.createLogger('whistle-sdk');
+
+const PROCESS_KEY = 'auto-whistle-sdk';
 
 export default class WhistleSDK {
   public seqId?: string;
@@ -65,6 +67,14 @@ export default class WhistleSDK {
     logger.info(`Stop whistle(http://127.0.0.1:${targetPort}) success!`);
   }
 
+  public async stopAll(): Promise<void> {
+    logger.info('Ready to stop all whistle ...');
+
+    await processHandler.kill(PROCESS_KEY);
+
+    logger.info('Stop all whistle success!');
+  }
+
   public async checkIfStarted(port?: number): Promise<boolean> {
     // 自检一下 whistle 是否真正启动了
     const checkURL = `http://127.0.0.1:${port || this.port}/cgi-bin/server-info`;
@@ -94,7 +104,7 @@ export default class WhistleSDK {
 
   private getStorageDir(): string {
     // 需要追加一个 seqId，生成唯一的命名空间，以便独立
-    return `${encodeURIComponent('whistle-sdk')}-${this.seqId}`;
+    return `${encodeURIComponent(PROCESS_KEY)}-${this.seqId}`;
   }
 
   private getSeqId(seqId?: string): string {
