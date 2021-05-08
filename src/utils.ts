@@ -2,10 +2,12 @@ import path from "path";
 import fse from 'fs-extra';
 import { util as cmdHubUtil } from "cmd-hub";
 
+import { IWhistleRuleConfig } from './WhistleRule';
+
 export interface IGenerateConfigFileOpts {
   saveDir?: string;
   fileName?: string;
-  getWhistleRules: () => { name: string; rules: string };
+  getWhistleRules: () => IWhistleRuleConfig;
   handleRuleContent?: (ruleContent: string, saveDir: string) => string;
 }
 

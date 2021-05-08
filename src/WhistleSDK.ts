@@ -67,8 +67,8 @@ export default class WhistleSDK {
     const { fullPath } = generateConfigFileResult;
 
     // 使用 whistle 的规则配置文件
-    // w2 use xx/.whistle.js -S whistle-e2etest --force
-    let useCmd = `w2 use ${fullPath} ${this.getCustomNamespaceArgs()}`;
+    // w2 add xx/.whistle.js -S whistle-e2etest --force
+    let useCmd = `w2 add ${fullPath} ${this.getCustomNamespaceArgs()}`;
 
     if (opts.forceOverride) {
       // 如果已经存在同名的规则，则可能会提示如下，此时若要覆盖，则使用 --force
