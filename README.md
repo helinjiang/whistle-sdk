@@ -2,7 +2,7 @@
 
 为 whistle 封装的 npm 库，用于在模块中调用。
 
-## 1. 安装
+## 安装
 
 ```
 $ npm install whistle-sdk --save
@@ -43,3 +43,8 @@ const WhistleSDK = require('../').default;
   }, 6000);
 })();
 ```
+
+## TODO
+
+自定义存储目录文件在 `~/.WhistleAppData/.whistle/custom_dirs` ，应该要提供一个方法用于清理或者备份它。
+
