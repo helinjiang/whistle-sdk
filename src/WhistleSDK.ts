@@ -8,7 +8,7 @@ interface IWhistleSDKOpts {
   forceOverride?: boolean;
 }
 
-type ISetRulesOpts = IGenerateConfigFileOpts & {
+export type ISetRulesOpts = IGenerateConfigFileOpts & {
   forceOverride?: boolean
 }
 

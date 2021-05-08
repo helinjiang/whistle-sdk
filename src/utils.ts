@@ -6,7 +6,7 @@ export interface IGenerateConfigFileOpts {
   saveDir?: string;
   fileName?: string;
   getWhistleRules: () => { name: string; rules: string };
-  handleRuleContent?: (ruleContent: string, outputPath?: string) => string;
+  handleRuleContent?: (ruleContent: string, saveDir: string) => string;
 }
 
 interface IGenerateConfigFileResult {
