@@ -3,8 +3,8 @@ const { generateConfigFile } = require('../lib/utils');
 
 (async () => {
   await generateConfigFile({
-    outputPath: path.join(__dirname, 'tmp'),
-    ruleConfigFileName: 'test.whistle.js',
+    // saveDir: path.join(__dirname, 'tmp'),
+    // fileName: 'test.whistle.js',
     getWhistleRules: () => {
       return {
         name: 'mmm',
@@ -13,8 +13,8 @@ const { generateConfigFile } = require('../lib/utils');
         ].join('\n'),
       };
     },
-    handleRuleContent: (ruleContent, outputPath) => {
-      return ruleContent + '\n# ' + outputPath;
-    },
+    // handleRuleContent: (ruleContent, outputPath) => {
+    //   return ruleContent + '\n# ' + outputPath;
+    // },
   });
 })();

@@ -2,9 +2,18 @@ import path from "path";
 import fse from 'fs-extra';
 import { util as cmdHubUtil } from "cmd-hub";
 
-interface IWhistleRuleConfigResult {
-  filePath: string;
-  content: string
+interface IGenerateConfigFileOpts {
+  saveDir?: string;
+  fileName?: string;
+  getWhistleRules: () => { name: string; rules: string };
+  handleRuleContent?: (ruleContent: string, outputPath?: string) => string;
+}
+
+interface IGenerateConfigFileResult {
+  fullPath: string;
+  content: string;
+  saveDir: string;
+  fileName: string;
 }
 
 /**
@@ -27,13 +36,6 @@ export async function checkIfWhistleStarted(port?: number): Promise<boolean> {
     });
 }
 
-export interface IGenerateConfigFileOpts {
-  outputPath: string;
-  ruleConfigFileName: string;
-  getWhistleRules: () => { name: string; rules: string };
-  handleRuleContent?: (ruleContent: string, outputPath: string) => string;
-}
-
 /**
  * 产生 whistle 规则配置文件
  *
@@ -41,7 +43,7 @@ export interface IGenerateConfigFileOpts {
  */
 export async function generateConfigFile(
   opts: IGenerateConfigFileOpts,
-): Promise<IWhistleRuleConfigResult> {
+): Promise<IGenerateConfigFileResult> {
   const whistleRules = opts.getWhistleRules();
 
   // 校验合法性
@@ -50,33 +52,43 @@ export async function generateConfigFile(
     return Promise.reject('无法自动生成 whistle 代理规则！');
   }
 
-  // 额外处理下代理规则
+  // 配置文件生成的目录
+  const saveDir = opts?.saveDir || path.join(__dirname, '../tmp');
+
+  // 配置文件的文件名字
+  const fileName = opts?.fileName || '.whistle.js';
+
+  // 代理规则的内容
   let ruleContent = whistleRules.rules;
 
   // 设置开启 Capture TUNNEL CONNECTs，否则 https 情况下可能会有问题
   const shouldEnableCapture = '* enable://capture';
   ruleContent = `${shouldEnableCapture}\n\n${ruleContent}`;
 
-  // 在 devnet 机器中，需要额外配置一个 pac 文件，否则无法直接访问外网
   // 自定义修改规则内容
   if (typeof opts.handleRuleContent === 'function') {
-    ruleContent = opts.handleRuleContent(ruleContent, opts.outputPath);
+    ruleContent = opts.handleRuleContent(ruleContent, saveDir);
   }
 
   // 更新
   whistleRules.rules = ruleContent;
 
-  // 文件内容
-  const ruleConfigFileContent = `module.exports = ${JSON.stringify(whistleRules, null, 2)};`;
+  // 配置文件内容
+  const content = `module.exports = ${JSON.stringify(whistleRules, null, 2)};`;
 
-  // whistle 配置文件路径，自动生成，一般情况下无需修改
-  const ruleConfigFile = path.join(opts.outputPath, opts.ruleConfigFileName);
+  // whistle 配置文件路径
+  const fullPath = path.join(saveDir, fileName);
 
-  // 保存文件
-  fse.outputFileSync(ruleConfigFile, ruleConfigFileContent);
+  // 移除旧的
+  fse.removeSync(fullPath);
+
+  // 保存文件到指定目录下
+  fse.outputFileSync(fullPath, content);
 
   return {
-    filePath: ruleConfigFile,
-    content: ruleConfigFileContent
+    fullPath,
+    content,
+    saveDir,
+    fileName,
   };
 }
