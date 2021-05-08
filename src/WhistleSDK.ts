@@ -1,11 +1,15 @@
 import { processHandler, util as cmdHubUtil } from "cmd-hub";
-import { checkIfWhistleStarted } from './utils';
+import { checkIfWhistleStarted, generateConfigFile, IGenerateConfigFileOpts } from './utils';
 
 interface IWhistleSDKOpts {
   seqId?: string;
   port?: number;
   useCurrentStartedWhistle?: boolean;
   forceOverride?: boolean;
+}
+
+type ISetRulesOpts = IGenerateConfigFileOpts & {
+  forceOverride?: boolean
 }
 
 const logger = cmdHubUtil.log.createLogger('whistle-sdk');
@@ -24,6 +28,7 @@ export default class WhistleSDK {
     this.forceOverride = opts?.forceOverride;
 
     this.seqId = this.getSeqId(opts?.seqId);
+
   }
 
   /**
@@ -35,14 +40,8 @@ export default class WhistleSDK {
     // 寻找并设置即将要占用的端口
     await this.findAndSetPort();
 
-    // 启动参数中，用于定义是否自定义存储目录，以便独立空间互不干扰
-    let whistleCustomNamespaceArgs = '';
-    if (!this.useCurrentStartedWhistle) {
-      whistleCustomNamespaceArgs = `-S ${this.getStorageDir()}`;
-    }
-
     // whistle: 启动
-    const startCmd = `w2 start ${whistleCustomNamespaceArgs} -p ${this.port}`;
+    const startCmd = `w2 start ${this.getCustomNamespaceArgs()} -p ${this.port}`;
     logger.info(startCmd);
 
     await cmdHubUtil.runCmd.runByExec(
@@ -60,18 +59,35 @@ export default class WhistleSDK {
   /**
    * 设置 whistle rules
    */
-  public async setRules(): Promise<void> {
+  public async setRules(opts: ISetRulesOpts): Promise<void> {
     logger.info('Ready to set whistle rules ...');
 
-    // // 获取 rules
-    // // const whistleRules = opts.getWhistleRules();
-    // const whistleRules = '';
-    //
-    // // 校验合法性
-    // if (!whistleRules || !whistleRules.name || !whistleRules.rules) {
-    //   logger.error('无法自动生成 whistle 代理规则！', JSON.stringify(opts));
-    //   return Promise.reject('无法自动生成 whistle 代理规则！');
-    // }
+    // 需要生成一个本地文件，才方便后续 whistle 直接使用该文件里面的规则来设置
+    const generateConfigFileResult = await generateConfigFile(opts);
+    const { fullPath } = generateConfigFileResult;
+
+    // 使用 whistle 的规则配置文件
+    // w2 use xx/.whistle.js -S whistle-e2etest --force
+    let useCmd = `w2 use ${fullPath} ${this.getCustomNamespaceArgs()}`;
+
+    if (opts.forceOverride) {
+      // 如果已经存在同名的规则，则可能会提示如下，此时若要覆盖，则使用 --force
+      // Warning: The rule already exists, to override the content, add CLI option --force.
+      useCmd = `${useCmd} --force`;
+    }
+
+    logger.info(useCmd);
+
+    // 如若成功，则会打印如下：
+    // Setting whistle[127.0.0.1:9422] rules successful.
+    await cmdHubUtil.runCmd.runByExec(
+      useCmd,
+      {},
+    );
+
+    // 注意，如果因为存在同名的规则，可能导致规则覆盖失败，这里无法判断出
+    // 只能通过打印的日志来定位
+    // TODO 可能需要增加检查代理是否设置成功，例如设置一个特殊的代理规则看能否命中
 
     logger.info('Set whistle rules success!');
   }
@@ -147,4 +163,7 @@ export default class WhistleSDK {
     ].join('-');
   }
 
+  private getCustomNamespaceArgs(): string {
+    return this.useCurrentStartedWhistle ? '' : `-S ${this.getStorageDir()}`;
+  }
 }

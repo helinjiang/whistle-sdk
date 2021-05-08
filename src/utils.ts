@@ -2,7 +2,7 @@ import path from "path";
 import fse from 'fs-extra';
 import { util as cmdHubUtil } from "cmd-hub";
 
-interface IGenerateConfigFileOpts {
+export interface IGenerateConfigFileOpts {
   saveDir?: string;
   fileName?: string;
   getWhistleRules: () => { name: string; rules: string };

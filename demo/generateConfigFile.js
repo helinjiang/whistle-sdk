@@ -13,8 +13,8 @@ const { generateConfigFile } = require('../lib/utils');
         ].join('\n'),
       };
     },
-    // handleRuleContent: (ruleContent, outputPath) => {
-    //   return ruleContent + '\n# ' + outputPath;
+    // handleRuleContent: (ruleContent, saveDir) => {
+    //   return ruleContent + '\n# ' + saveDir;
     // },
   });
 })();
